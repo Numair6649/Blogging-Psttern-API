@@ -1,8 +1,9 @@
 import os
+from datetime import datetime
 from urllib.parse import quote_plus
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy import JSON, String, Text, create_engine, DateTime, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 
 def _database_url() -> str:
@@ -43,6 +44,25 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
     pass
+
+
+class Blog(Base):
+    __tablename__ = "blogs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(500))
+    content: Mapped[str] = mapped_column(Text())
+    category: Mapped[str] = mapped_column(String(255))
+    tags: Mapped[list[str]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 
 def get_db():
