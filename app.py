@@ -35,6 +35,20 @@ def list_blogs(db: Session) -> list[dict]:
     return [_blog_as_dict(b) for b in rows]
 
 
+def get_blog(db: Session, blog_id: int) -> dict | None:
+    blog = db.get(Blog, blog_id)
+    return _blog_as_dict(blog) if blog else None
+
+
+def delete_blog(db: Session, blog_id: int) -> bool:
+    blog = db.get(Blog, blog_id)
+    if blog is None:
+        return False
+    db.delete(blog)
+    db.commit()
+    return True
+
+
 def create_blog(db: Session, payload: BlogCreate) -> dict:
     blog = Blog(
         title=payload.title,
@@ -46,3 +60,16 @@ def create_blog(db: Session, payload: BlogCreate) -> dict:
     db.commit()
     db.refresh(blog)
     return _blog_as_dict(blog)
+
+def update_blog(db: Session, blog_id: int, payload: BlogCreate) -> dict | None:
+    blog = db.get(Blog, blog_id)
+    if blog is None:
+        return None
+    blog.title = payload.title
+    blog.content = payload.content
+    blog.category = payload.category
+    blog.tags = payload.tags
+    db.commit()
+    db.refresh(blog)
+    return _blog_as_dict(blog)
+
